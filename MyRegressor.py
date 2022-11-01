@@ -1,4 +1,6 @@
 from sklearn.metrics import mean_absolute_error
+import numpy as np
+from scipy.optimize import linprog
 
 class MyRegressor:
     def __init__(self, alpha):
@@ -17,7 +19,7 @@ class MyRegressor:
     def select_sample(self, trainX, trainY):
         ''' Task 1-4
             Todo: '''
-        
+         
         return selected_trainX, selected_trainY    # A subset of trainX and trainY
 
 
@@ -31,7 +33,31 @@ class MyRegressor:
     def train(self, trainX, trainY):
         ''' Task 1-2
             Todo: '''
+            
         
+        Y = trainY
+        X = trainX
+        N = trainX.shape[0]
+        M = trainX.shape[1]
+
+        ## variables: t(N,1), theta(M,1), b(1,1)
+        ## parameters: X(N,M), Y(N,1)
+        
+        c = np.hstack((1/N*np.ones([1,N]),self.alpha*np.ones([1,M]), np.zeros([1,M+1])))
+        A = np.block([
+                      [-np.eye(N), np.zeros([N,M]), -X, -np.ones([N,1])], 
+                      [-np.eye(N), np.zeros([N,M]), X, np.ones([N,1])],
+                      [np.zeros([M,N]), -np.eye(M), np.eye(M), np.zeros([M,1])],
+                      [np.zeros([M,N]), -np.eye(M), np.eye(M), np.zeros([M,1])]
+                      ])
+        
+        b = np.hstack((-Y, Y, np.zeros([M]), np.zeros([M])))
+        
+        sol = linprog(c, A_ub=A, b_ub=b)
+        self.weight = sol.x[N+M:-1]
+        self.bias = sol.x[-1]
+        
+        predY, train_error = self.evaluate(trainX, trainY)
         return train_error
     
     
