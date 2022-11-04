@@ -99,7 +99,7 @@ class MyRegressor:
         for index, x in enumerate(trainX):
             y = trainY[index]
 
-            ### Todo:
+            ### Todo:   
             
         return self.training_cost, train_error
 

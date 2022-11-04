@@ -1,65 +1,62 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Oct 29 15:26:00 2022
-
-@author: znhao
-"""
-from scipy.optimize import linprog
 import numpy as np
-
-from MyRegressor import MyRegressor
 import utils
+from MyRegressor import MyRegressor
 
-from sklearn.decomposition import PCA
-
-data = utils.prepare_data_gaussian()
+data = utils.prepare_data_news()
 trainX = data['trainX']
 trainY = data['trainY']
 testX = data['testX']
 testY = data['testY']
 
-pca = PCA(n_components=500)
-pca.fit(trainX)
-xpc = pca.fit_transform(trainX)
 
-# sol = MyRegressor(alpha=0.05)
-# train_error = sol.train(trainX, trainY)
-# pred_testY,test_error = sol.evaluate(testX, testY)
+# we simulate the online setting by handling training data samples one by one
+cost = 0.9
+maxCost = 0.9
+sent_databyte = 0
+p_feature = 0.5
 
-# n_zeros = np.count_nonzero(sol.weight==0)
+selected_feat = [i for i in range(58)]
 
-# Y = trainY
-# X = trainX
-# N = trainX.shape[0]
-# M = trainX.shape[1]
+for index, x in enumerate(trainX):
+    
+    # Sensor collects data sample
+    y = trainY[index]
+    
+    # Append current data sample to history dataset
+    if index == 0:
+        histX = np.array([x])
+        histY = y
+    else:
+        histX = np.vstack([histX, x])
+        histY = np.vstack([histY, y])
+        
+    # Collected databyte
+    collected_databyte = histX.size + histY.size
+    
+    # Decide whether send data to central
+    current_cost = sent_databyte/collected_databyte
+    
+    if current_cost <= maxCost:
+        
+        # Send selected data to centrl node
+        selected_trainX = histX[:,selected_feat]        
+        sent_databyte = selected_trainX.size
+        
+        # Regressor initilization
+        sol = MyRegressor(alpha=0)
+        
+        # Feature selection
+        selected_feat = sol.select_features(trainX, trainY, p_feature)
+        
+    else:
+        
+        p_feature = cost
+    
 
-## variables: t(N,1), u(M,1), theta(M,1), b(1,1)
-## parameters: X(N,M), Y(N,1)
-# alpha = 0
+    
 
-# c = np.hstack((1/N*np.ones([1,N]),alpha*np.ones([1,M]), np.zeros([1,M+1])))
-# A = np.block([
-#               [-np.eye(N), np.zeros([N,M]), -X, -np.ones([N,1])], 
-#               [-np.eye(N), np.zeros([N,M]), X, np.ones([N,1])],
-#               [np.zeros([M,N]), -np.eye(M), np.eye(M), np.zeros([M,1])],
-#               [np.zeros([M,N]), -np.eye(M), np.eye(M), np.zeros([M,1])]
-#               ])
-
-# b = np.hstack((-Y, Y, np.zeros([M]), np.zeros([M])))
-
-# sol = linprog(c, A_ub=A, b_ub=b)
-# weight = sol.x[N+M:-1]
-# bias = sol.x[-1]
-
-
-# c = np.hstack((1/N*np.ones([1,N]), np.zeros([1,M+1])))
-# A = np.block([
-#              [-np.eye(N), -X, -np.ones([N,1])], 
-#              [-np.eye(N), X, np.ones([N,1])]
-#              ])
-
-# b = np.hstack((-Y, Y))
-
-# sol = linprog(c, A_ub=A, b_ub=b)
-# weight = sol.x[N:-1]
-# bias = sol.x[-1]
+    
+    
+    
+    
+    
