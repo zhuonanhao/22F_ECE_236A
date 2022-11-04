@@ -1,5 +1,6 @@
 from sklearn.metrics import mean_absolute_error
 import numpy as np
+import random
 from scipy.optimize import linprog
 
 class MyRegressor:
@@ -9,9 +10,25 @@ class MyRegressor:
         self.training_cost = 0   # N * N
         self.alpha = alpha
         
-    def select_features(self):
+    def select_features(self, trainX, trainY, percentage):
         ''' Task 1-3
             Todo: '''
+            
+        feat_num = int(trainX.shape[1]*percentage)
+        
+        maxIter = 100
+        minErr = 1000
+        iter = 0
+        while iter < maxIter:
+            
+            feat_ind = random.sample(range(500),feat_num)
+            err = self.train(trainX[:,feat_ind], trainY)
+            
+            if err < minErr:
+                selected_feat = feat_ind
+                selected_feat.sort()
+                
+            iter += 1
         
         return selected_feat # The index List of selected features
         

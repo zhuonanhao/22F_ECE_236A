@@ -7,8 +7,10 @@ Created on Sat Oct 29 15:26:00 2022
 from scipy.optimize import linprog
 import numpy as np
 
+from MyRegressor import MyRegressor
 import utils
-import MyRegressor
+
+from sklearn.decomposition import PCA
 
 data = utils.prepare_data_gaussian()
 trainX = data['trainX']
@@ -16,11 +18,15 @@ trainY = data['trainY']
 testX = data['testX']
 testY = data['testY']
 
-sol = MyRegressor.MyRegressor(alpha=0.00)
-train_error = sol.train(trainX, trainY)
-pred_testY,test_error = sol.evaluate(testX, testY)
+pca = PCA(n_components=500)
+pca.fit(trainX)
+xpc = pca.fit_transform(trainX)
 
-n_zeros = np.count_nonzero(sol.weight==0)
+# sol = MyRegressor(alpha=0.05)
+# train_error = sol.train(trainX, trainY)
+# pred_testY,test_error = sol.evaluate(testX, testY)
+
+# n_zeros = np.count_nonzero(sol.weight==0)
 
 # Y = trainY
 # X = trainX
