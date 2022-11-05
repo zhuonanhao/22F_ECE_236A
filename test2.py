@@ -12,11 +12,10 @@ testY = data['testY']
 
 
 # we simulate the online setting by handling training data samples one by one
-cost = 0.9
+cost = 0.75
 maxCost = cost
-sent_volume = 0
 p_feature = 0.5
-
+err_threshold = 0.5
 c = 0
 train_err  = np.zeros([trainX.shape[0],1])
 test_err  = np.zeros([trainX.shape[0],1])
@@ -35,6 +34,8 @@ for index, x in enumerate(trainX):
         histX = np.array([x])
         histY = y
         
+        sample_num = 0
+        
         # Initilize fitting parameters
         weight = np.zeros(x.shape[0])
         bias = 0
@@ -48,20 +49,15 @@ for index, x in enumerate(trainX):
     # Collected data volume (maximum set that can be sent)
     collected_volume = histX.size + histY.size
     
-    if index >= 3:
+    x_err = abs(y-x.dot(weight)-bias)
+    
+    if index >= 2 and x_err > err_threshold:
         
-        # Select best features from history database
-        p_feat = maxCost
-        
-        feat_num = int(histX.shape[1]*p_feat)
-        selector = SelectKBest(f_regression, k=feat_num)
-        selector.fit_transform(histX, histY)
-        feat_bool = selector.get_support()
-        selected_feat = [i for i, x in enumerate(feat_bool) if x]
+        sample_num = np.append(sample_num,index)
         
         # Prepare sent data
-        sent_trainX = histX[:,selected_feat]
-        sent_trainY = histY
+        sent_trainX = histX[sample_num,:]
+        sent_trainY = histY[sample_num]
         
         # Sent data volume
         sent_volume = sent_trainX.size + sent_trainY.size
@@ -70,9 +66,12 @@ for index, x in enumerate(trainX):
             
             # Central node do:
             sol = MyRegressor(alpha=0)
-            sol.train(sent_trainX, sent_trainY)
+            train_err = sol.train(sent_trainX, sent_trainY)
             weight = sol.weight
             bias = sol.bias
+            predY, test_err = sol.evaluate(testX, testY)
+            print(x_err,index, train_err, test_err)
+        
     
 
     

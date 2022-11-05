@@ -92,14 +92,65 @@ class MyRegressor:
         return train_error
     
     
-    def train_online(self, trainX, trainY):
+    def train_online(self, trainX, trainY, cost):
         ''' Task 2 '''
+        
+        maxCost = cost
+        err_threshold = 0.5
 
         # we simulate the online setting by handling training data samples one by one
         for index, x in enumerate(trainX):
             y = trainY[index]
 
             ### Todo:   
+            
+            ### Sensor node do:
+            
+            # Sensor collects data sample
+            y = trainY[index]
+            
+            # Append current data sample to history database
+            if index == 0:
+                
+                # Initilize history database
+                histX = np.array([x])
+                histY = y
+                
+                sample_num = 0
+                
+                # Initilize fitting parameters
+                weight = np.zeros(x.shape[0])
+                bias = 0
+                
+            else:
+                
+                # Updata history database
+                histX = np.vstack([histX, x])
+                histY = np.append(histY, y)
+                
+            # Collected data volume (maximum set that can be sent)
+            collected_volume = histX.size + histY.size
+            
+            x_err = abs(y-x.dot(weight)-bias)
+            
+            if index >= 2 and x_err > err_threshold:
+                
+                sample_num = np.append(sample_num,index)
+                
+                # Prepare sent data
+                sent_trainX = histX[sample_num,:]
+                sent_trainY = histY[sample_num]
+                
+                # Sent data volume
+                sent_volume = sent_trainX.size + sent_trainY.size
+                
+                if sent_volume <= collected_volume * maxCost:
+                    
+                    # Central node do:
+                    sol = MyRegressor(alpha=0)
+                    train_error = sol.train(sent_trainX, sent_trainY)
+                    weight = sol.weight
+                    bias = sol.bias
             
         return self.training_cost, train_error
 
