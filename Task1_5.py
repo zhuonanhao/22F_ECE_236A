@@ -2,7 +2,8 @@ import numpy as np
 import utils
 from MyRegressor import MyRegressor
 
-data = utils.prepare_data_gaussian()
+# data = utils.prepare_data_gaussian()
+data = utils.prepare_data_news()
 trainX = data['trainX']
 trainY = data['trainY']
 testX = data['testX']
@@ -30,15 +31,3 @@ seq = np.argsort(cost)
 result = {'taskID':'1-5', 'cost':cost[seq], 'train_err':train_err[seq], 'test_err':test_err[seq]}
 
 utils.plot_result(result)
-
-# p_feature = 0.9
-# p_sample = 0.9
-
-# sol = MyRegressor(alpha=0)
-
-# selected_feat = sol.select_features(trainX, trainY, p_feature)
-# temp_trainX, temp_trainY = sol.select_sample(trainX, trainY, p_sample)
-
-
-# selected_trainX = temp_trainX[:,selected_feat]
-# selected_trainY = temp_trainY

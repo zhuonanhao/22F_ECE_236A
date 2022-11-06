@@ -119,8 +119,11 @@ class MyRegressor:
                 sample_num = 0
                 
                 # Initilize fitting parameters
-                weight = np.zeros(x.shape[0])
-                bias = 0
+                self.weight = np.ones(x.shape[0])
+                self.bias = 0
+                
+                sol = MyRegressor(alpha=0)
+                train_error = sol.train(np.vstack([x,x]),np.append(y,y))
                 
             else:
                 
@@ -131,7 +134,9 @@ class MyRegressor:
             # Collected data volume (maximum set that can be sent)
             collected_volume = histX.size + histY.size
             
-            x_err = abs(y-x.dot(weight)-bias)
+
+            
+            x_err = abs(y-x.dot(self.weight)-self.bias)
             
             if index >= 2 and x_err > err_threshold:
                 
@@ -144,14 +149,17 @@ class MyRegressor:
                 # Sent data volume
                 sent_volume = sent_trainX.size + sent_trainY.size
                 
+                self.training_cost = sent_volume/collected_volume
+                
                 if sent_volume <= collected_volume * maxCost:
                     
                     # Central node do:
+                    
                     sol = MyRegressor(alpha=0)
                     train_error = sol.train(sent_trainX, sent_trainY)
-                    weight = sol.weight
-                    bias = sol.bias
-            
+                    self.weight = sol.weight
+                    self.bias = sol.bias
+
         return self.training_cost, train_error
 
     

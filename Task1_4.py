@@ -2,7 +2,8 @@ import numpy as np
 import utils
 from MyRegressor import MyRegressor
 
-data = utils.prepare_data_gaussian()
+# data = utils.prepare_data_gaussian()
+data = utils.prepare_data_news()
 trainX = data['trainX']
 trainY = data['trainY']
 testX = data['testX']
